@@ -44,11 +44,12 @@ curl -s localhost:9898/
 ```
 Refresh the dashboard to confirm request metrics appear.
 
-In Grafana’s Explore view, switch to the Elasticsearch data source and query `demo-metrics` (for example `value: *`) to verify the seeded documents.
+Once the Grafana port-forward is running, use these shortcuts to verify the demo:
 
-Shortcut to the prebuilt Podinfo dashboard: [Podinfo Overview](http://localhost:3000/d/podinfo-demo/podinfo-overview?orgId=1&from=now-15m&to=now&timezone=browser&refresh=30s)
+- Metrics dashboard: [Podinfo Overview](http://localhost:3000/d/podinfo-demo/podinfo-overview?orgId=1&from=now-15m&to=now&timezone=browser&refresh=30s) – confirm request rate updates after hitting podinfo.
+- Logs/Explore view: [Elasticsearch Explore](http://localhost:3000/explore?schemaVersion=1&panes=%7B%22x68%22%3A%7B%22datasource%22%3A%22elasticsearch%22%2C%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22elasticsearch%22%2C%22uid%22%3A%22elasticsearch%22%7D%2C%22query%22%3A%22%22%2C%22alias%22%3A%22%22%2C%22metrics%22%3A%5B%7B%22type%22%3A%22count%22%2C%22id%22%3A%221%22%7D%5D%2C%22bucketAggs%22%3A%5B%7B%22type%22%3A%22date_histogram%22%2C%22id%22%3A%222%22%2C%22settings%22%3A%7B%22interval%22%3A%22auto%22%7D%2C%22field%22%3A%22%40timestamp%22%7D%5D%2C%22timeField%22%3A%22%40timestamp%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22now-1h%22%2C%22to%22%3A%22now%22%7D%2C%22compact%22%3Afalse%7D%7D&orgId=1) – runs a ready-made query against the seeded `demo-metrics` index (update the query to `value:*` or inspect raw logs as needed).
 
-Quick link to the Elasticsearch Explore view seeded for this demo: [Elasticsearch Explore](http://localhost:3000/explore?schemaVersion=1&panes=%7B%22x68%22%3A%7B%22datasource%22%3A%22elasticsearch%22%2C%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22elasticsearch%22%2C%22uid%22%3A%22elasticsearch%22%7D%2C%22query%22%3A%22%22%2C%22alias%22%3A%22%22%2C%22metrics%22%3A%5B%7B%22type%22%3A%22count%22%2C%22id%22%3A%221%22%7D%5D%2C%22bucketAggs%22%3A%5B%7B%22type%22%3A%22date_histogram%22%2C%22id%22%3A%222%22%2C%22settings%22%3A%7B%22interval%22%3A%22auto%22%7D%2C%22field%22%3A%22%40timestamp%22%7D%5D%2C%22timeField%22%3A%22%40timestamp%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22now-1h%22%2C%22to%22%3A%22now%22%7D%2C%22compact%22%3Afalse%7D%7D&orgId=1)
+Reference screenshots:
 
 ![Grafana Explore with Elasticsearch](elasticserarch-grafana.png)
 ![Grafana Podinfo Dashboard](prom.png)
@@ -64,3 +65,5 @@ kind delete cluster --name grafana-demo
 - Create environment overlays (e.g. `monitoring/overlays/dev` and `monitoring/overlays/prod`) that reference the base and layer on environment-specific patches—image tags, replica counts, Helm values, and secrets.
 - Update delivery tooling: either have CI/CD call `kustomize build monitoring/overlays/<env>` per environment, or adopt Argo CD with an app-of-apps pattern that points at the overlays for continuous delivery.
 - Expand observability by adding a log-forwarder that ships pod logs into Elasticsearch, and extend the Grafana provisioning with an Elasticsearch datasource plus a log dashboard to demonstrate metrics + logs in one view.
+- Manage secrets via External Secrets Operator backed by Google Cloud Secret Manager so credentials stay out of manifests.
+- Use infrastructure-as-code (Pulumi, Terraform, or Crossplane) to provision the surrounding cloud resources and minimize manual setup.
