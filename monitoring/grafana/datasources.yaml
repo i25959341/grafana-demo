@@ -26,8 +26,8 @@ datasources:
     jsonData:
       esVersion: 80
       timeField: "@timestamp"
-      interval: Daily
       maxConcurrentShardRequests: 5
       logLevelField: "service"
       includeFrozen: false
       tlsSkipVerify: true
+      timeInterval: 10s
