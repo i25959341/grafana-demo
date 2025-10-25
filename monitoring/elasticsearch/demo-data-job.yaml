@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: elasticsearch-demo-data
+  namespace: monitoring
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: elasticsearch-demo-data
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: seed
+          image: curlimages/curl:8.7.1
+          env:
+            - name: ELASTIC_URL
+              value: https://elasticsearch-master:9200
+            - name: ELASTIC_USER
+              value: elastic
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-master-credentials
+                  key: password
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -euo pipefail
+              AUTH="-u ${ELASTIC_USER}:${ELASTIC_PASSWORD}"
+              CURL="curl --silent --show-error --insecure ${AUTH}"
+              echo "Waiting for Elasticsearch at ${ELASTIC_URL}"
+              until ${CURL} "${ELASTIC_URL}" >/dev/null; do
+                sleep 5
+              done
+              echo "Creating demo-metrics index"
+              ${CURL} \
+                -X PUT "${ELASTIC_URL}/demo-metrics" \
+                -H 'Content-Type: application/json' \
+                -d '{
+                      "mappings": {
+                        "properties": {
+                          "@timestamp": {"type": "date"},
+                          "service": {"type": "keyword"},
+                          "value": {"type": "double"}
+                        }
+                      }
+                    }' >/dev/null || true
+              echo "Seeding metrics"
+              for i in $(seq 1 20); do
+                TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+                VALUE=$(( (RANDOM % 50) + 10 ))
+                PAYLOAD=$(printf '{"@timestamp":"%s","service":"podinfo","value":%s}' "$TS" "$VALUE")
+                ${CURL} \
+                  -X POST "${ELASTIC_URL}/demo-metrics/_doc" \
+                  -H 'Content-Type: application/json' \
+                  -d "${PAYLOAD}" >/dev/null
+                sleep 2
+              done
+              echo "Demo data written"

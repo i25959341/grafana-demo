@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+configMapGenerator:
+  - name: grafana-config
+    files:
+      - grafana.ini
+  - name: grafana-datasources
+    files:
+      - datasources.yaml
+  - name: grafana-dashboard-config
+    files:
+      - dashboard-provider.yaml
+  - name: grafana-dashboards
+    files:
+      - demo-dashboard.json
+resources:
+  - persistentvolumeclaim.yaml
+  - deployment.yaml
+  - service.yaml
