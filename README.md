@@ -61,6 +61,8 @@ kind delete cluster --name grafana-demo
 ```
 
 ## Extension Plan
+- Call out that the demo intentionally runs single replicas of Grafana, Prometheus, and Elasticsearch; harden availability by scaling them horizontally, adding PodDisruptionBudgets, and using anti-affinity so a node loss does not take the whole stack down. For Prometheus specifically, evaluate remote-write plus Thanos or a high-availability pair with shared object storage.
+- Consider operational upgrades such as adopting the kube-prometheus stack (Prometheus Operator) for lifecycle management, or shipping metrics to managed services like Grafana Cloud.
 - Carve out a reusable base under `monitoring/base` that contains the shared namespace, Prometheus, Grafana, podinfo, and Elasticsearch definitions.
 - Create environment overlays (e.g. `monitoring/overlays/dev` and `monitoring/overlays/prod`) that reference the base and layer on environment-specific patches—image tags, replica counts, Helm values, and secrets.
 - Update delivery tooling: either have CI/CD call `kustomize build monitoring/overlays/<env>` per environment, or adopt Argo CD with an app-of-apps pattern that points at the overlays for continuous delivery.
